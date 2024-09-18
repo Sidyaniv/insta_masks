@@ -1,9 +1,7 @@
 import cv2
-import numpy as np
-import os
-from enums import *
 
-videos_path = './videos/people_go.mp4'
+from image_edit import ImageEditing
+from src.person_announ.enums import *
 
 
 def get_video(vid_type: str, video_path: str = ''):
@@ -20,10 +18,15 @@ def get_video(vid_type: str, video_path: str = ''):
     while True:
         # первая переменная указывает на успешность захвата кадра, а вторая - сам кадр
         success, img = cap.read()
-        cv2.imshow('video', img)
+        cadr = ImageEditing(image=img)
+        cadr.bgr2gray()
+        cadr.gray2binary()
+        cv2.imshow('video', cadr.img)
 
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 
 
-get_video(CAMERA_FORMAT, videos_path)
+# пример работы
+if __name__ == '__main__':
+    get_video(VIDEO_FORMAT, VIDEO_PATH)
