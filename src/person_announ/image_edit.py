@@ -44,7 +44,7 @@ class ImageEditing():
         self.img[y:y+height, x:x+width] = blur_roi
 
 
-    def draw_faces_interface(self,
+    def display_simple_interface(self,
                              dim: list,
                              iter: int = 0
                             ):
@@ -60,6 +60,24 @@ class ImageEditing():
 
         cv2.rectangle(self.img, (x, y), (x + width, y + height), (255, 0, 0), 2)
         cv2.putText(self.img, f"Face_{iter}", (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0))
+
+
+    def display_interface(self,
+                          dim: list,
+                          iter: int = 0
+                         ):
+           '''Отображает bbox лица, координаты левого верхнего угла bbox и длина его рёбер, номер лица, вероятность детекции лица.
+           Param:
+               dim (list) - Координаты левого верхнего угла bbox 
+                   и длина его рёбер[x, y, width, height]
+               iter (int) - номер лица
+           Return: 
+               -
+           '''
+           x, y, width, height = dim
+
+           cv2.rectangle(self.img, (x, y), (x + width, y + height), (255, 0, 0), 2)
+           cv2.putText(self.img, f"Face_{iter}", (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0))
 
 
     def resize_img(self, width=200, height=2000):
