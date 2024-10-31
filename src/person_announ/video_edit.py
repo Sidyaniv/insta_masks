@@ -34,21 +34,8 @@ def display_video(vid_type: str, video_path: str = ''):
 
 # пример работы
 if __name__ == '__main__':
-   pass
-    # cap = cv2.VideoCapture(0)
-    # # устанавливаем размеры выводимого видео
-    # # propid==3 - width, propid==4 - height
-    # cap.set(3, 640)
-    # cap.set(4, 480)
+    from image_edit import ImageEditing
+    from args import *
 
-    # while True:
-    #     # первая переменная указывает на успешность захвата кадра, а вторая - сам кадр
-    #     success, frame = cap.read()
-    #     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    #     blur = cv2.GaussianBlur(gray, (5, 5), 0)
-    #     binary = cv2.Canny(blur, 5, 125, 250)
-        
-    #     cv2.imshow('video', binary)
-
-    #     if cv2.waitKey(1) & 0xFF == ord('q'):
-    #         break
+    display_video('camera')
+    pass
