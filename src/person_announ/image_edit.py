@@ -71,7 +71,7 @@ class ImageEditing():
         cv2.putText(self.img, f"Face_{iter}", (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0))
 
 
-    def display_interface(self,
+    def display_hard_interface(self,
                           dim: list,
                           iter: int = 0
                          ):
@@ -118,10 +118,11 @@ class ImageEditing():
 
 # пример работы
 if __name__ == '__main__':
-    people = ImageEditing(image_path=IMAGE_PATH)
-    # people.bgr2gray()
-    people.img = cv2.GaussianBlur(people.img, (51,51), 0)
-    # people.gray2binary()
-    # contours = people.get_contours()
+    pass
+    # people = ImageEditing(image_path=IMAGE_PATH)
+    # # people.bgr2gray()
+    # people.img = cv2.GaussianBlur(people.img, (51,51), 0)
+    # # people.gray2binary()
+    # # contours = people.get_contours()
 
-    show_img(people.img)
+    # show_img(people.img)
