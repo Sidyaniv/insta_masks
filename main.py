@@ -8,7 +8,7 @@ from src.person_announ.args import CAMERA_FORMAT, VIDEO_FORMAT, VIDEO_PATH
 
 haarcascade_path = os.path.join(os.getcwd(), 'models', 'haarcascade_frontalface_default.xml')
 opencv_dnn_path = os.path.join(os.getcwd(), 'models', 'face_detection_yunet_2023mar_int8.onnx')
-# prototxt_config = ""
+
 
 def person_announcement(model: str,
                         format: str=CAMERA_FORMAT,
@@ -21,47 +21,46 @@ def person_announcement(model: str,
     while True: 
         # первая переменная указывает на успех захвата кадра, а вторая - сам кадр
         success, img = cap.read()
-
         if not success:
             raise Exception('Ошибка в захвате кадра') 
 
         img_edit = ImageEditing(image=img)
         img_edit.detect_preparation()
         
-        frameWidth = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-        frameHeight = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        # frameWidth = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+        # frameHeight = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
         if model=='haarcascade':
             cascade = cv2.CascadeClassifier(haarcascade_path) 
             faces = cascade.detectMultiScale(img_edit.img, 
-                                        scaleFactor=1.9, 
-                                        minNeighbors=2)
+                                        scaleFactor=1.2, 
+                                        minNeighbors=8)
         elif model=='opencv_dnn':
             # TODO: OpenCV DNN face detection
             detector = cv2.FaceDetectorYN.create(
                 model=opencv_dnn_path,
                 config="",
                 input_size=((img_edit.width, img_edit.height)),
-                score_threshold=0.9,
+                score_threshold=0.7,
                 nms_threshold=0.3,
                 top_k=500,
-                # backend_id=0,
-                # target_id=0
             )
-            detector.setInputSize((frameWidth, frameHeight))
-            faces = detector.detect(img_edit.img)
-            if faces[1] is not None:
-                print(f"Обнаруженные лица: {faces}", "", sep='\n')
-            else: 
-                print("Не обнаружено лиц на потоковом видео")
-            # tm = cv2.TickMeter()
-
-        
-        for iteration, dimension in enumerate(faces):
-            # x, y, width, height = dimension
+            detector.setInputSize((img_edit.width, img_edit.height))
+            _, faces = detector.detect(img_edit.img)
             
-            img_edit.blur_roi(dim=dimension, blur=31)
-            img_edit.display_simple_interface(dim=dimension,iter=iteration)
+        if faces is not None:
+            print(f"Обнаруженные лица: {faces}", "", sep='\n')
+        else: 
+            raise Exception(f"Ошибка детекции лиц моделью (faces[1] = {faces})")
+
+        for iteration, face in enumerate(faces):
+            if model=='opencv_dnn':
+                face_procent = face[14]
+                print(f"Вероятность правильного обнаружения лица: {face_procent * 100}%")
+                face = [int(item) for item in face[:4]]
+
+            img_edit.blur_roi(dim=face, blur=31)
+            img_edit.display_simple_interface(dim=face,iter=iteration)
 
         cv2.imshow('video', img_edit.img)
 

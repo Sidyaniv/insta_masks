@@ -18,6 +18,15 @@ class ImageEditing():
         self.height, self.width = self.img.shape[:2]
 
 
+    def correct_dimension(self, dim: list): 
+        if dim is not None:
+            print(len(dim) ,dim, sep='\n')
+            x, y , width, height = dim
+            return x, y , width, height
+        else:
+            raise Exception("Dimension error")
+
+
     def detect_preparation(self):
         '''Подготовка изображения к детектированию лиц
         Param:
@@ -37,7 +46,7 @@ class ImageEditing():
         Return: 
             -
         '''
-        x, y , width, height = dim
+        x, y, width, height = self.correct_dimension(dim)
 
         roi = self.img[y:y+height, x:x+width]
         blur_roi = cv2.medianBlur(self.img[y:y+height, x:x+width], blur)
@@ -56,7 +65,7 @@ class ImageEditing():
         Return: 
             -
         '''
-        x, y, width, height = dim
+        x, y, width, height = self.correct_dimension(dim)
 
         cv2.rectangle(self.img, (x, y), (x + width, y + height), (255, 0, 0), 2)
         cv2.putText(self.img, f"Face_{iter}", (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0))
