@@ -7,9 +7,11 @@ from src.person_announ.args import CAMERA_FORMAT, VIDEO_FORMAT, VIDEO_PATH
 
 windowSize = [700, 700]
 # TODO Добавить детекцию лиц с помощью HOG
-# TODO Создать общую функцию блюра 
+# TODO Создать общую функцию блюра и установить тип блюра
+    #  параметром в главную функцию
 # TODO Убрать баг в пикселизации с изменением размерности roi
-
+# TODO Протестить баг с отрицательными значениями roi
+# TODO Оформить документацию
 
 def person_announcement(model: str,
                         window_size: list[int]=(640, 480),
@@ -43,9 +45,11 @@ def person_announcement(model: str,
                                 1, (0, 255, 0), 2)
                     face = face[:4]                
                         
-                img_edit.median_blur_roi(dim=face, blur=31)
+                img_edit.blur_roi(type='pixelization', dim=face)
+                # img_edit.median_blur_roi(dim=face, blur=31)
                 # img_edit.pixelization_roi(dim=face, pix=15)
                 
+
                 img_edit.display_simple_interface(dim=face, dims=faces, iter=iteration)
 
         cv2.imshow('video', img_edit.img)

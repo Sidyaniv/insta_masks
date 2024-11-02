@@ -39,50 +39,26 @@ class ImageEditing():
         cv2.GaussianBlur(self.img, (9, 9), 10)
 
 
-    def blur_roi(self, anon: str, dim: list, magnitude: int):
+    def blur_roi(self, type: str, dim: list, magnitude: int=15):
         x, y , width, height = self.correct_dimension(dim)
 
         roi = self.img[y:y+height, x:x+width]
 
-        if anon == 'blur':
+        if type == 'blur':
             blur_roi = cv2.blur(self.img[y:y+height, x:x+width])
-        elif anon == 'median':
-            cv2.medianBlur(self.img[y:y+height, x:x+width], magnitude)
-            self.img[y:y+height, x:x+width] = roi
-        elif anon == 'pixelization':
-            cv2.resize(self.img[y:y+height, x:x+width], (pix, pix))
-        else:
-            raise Exception("Anonymization error")
-
-    def median_blur_roi(self, dim: list, blur: int):
-        '''Анонимизация region of interest путём блюра изображения
-        Param:
-            dim (list) - Координаты левого верхнего угла roi
-                и длина его рёбер[x, y, width, height]
-        '''
-        x, y, width, height = self.correct_dimension(dim)
-        # Чтобы избежать ошибки с отрицательными срезами:
-        # idx_x = x if x >= 0 else idx_x = 0
-        # idx_y = y if y >= 0 else idx_y = 0
-        roi = self.img[y:y+height, x:x+width]
-        blur_roi = cv2.medianBlur(roi, blur)
+        elif type == 'median':
+            blur_roi = cv2.medianBlur(self.img[y:y+height, x:x+width], magnitude)
+        elif type == 'pixelization':
+            temp = cv2.resize(roi, (width // magnitude, 
+                                    height // magnitude), 
+                                    interpolation=cv2.INTER_AREA)
+            blur_roi = cv2.resize(temp, 
+                                 (width, height), 
+                                 interpolation=cv2.INTER_NEAREST)
+        # else:
+            # raise Exception("Anonymization error")
         self.img[y:y+height, x:x+width] = blur_roi
 
-
-    def pixelization_roi(self, dim: list, pix: int):
-        '''Анонимизация region of interest путём пикселизации изображения
-        Param:
-            dim (list) - Координаты левого верхнего угла roi
-                и длина его рёбер[x, y, width, height]
-        '''
-        x, y , width, height = self.correct_dimension(dim)
-
-        roi = self.img[y:y+height, x:x+width]
-        
-        temp = cv2.resize(roi, (width // pix, height // pix), interpolation=cv2.INTER_AREA)
-        pix_roi = cv2.resize(temp, (width, height), interpolation=cv2.INTER_NEAREST)
-
-        self.img[y:y+height, x:x+width] = pix_roi
 
     def display_simple_interface(self,
                              dim: list,
@@ -103,13 +79,15 @@ class ImageEditing():
                     (x, y - 10), 
                     cv2.FONT_HERSHEY_SIMPLEX, 
                     1, 
-                    (0, 255, 0))
+                    (0, 255, 0),
+                    2)
         cv2.putText(self.img,
                         f"Detected faces: {len(dims)}",
                         window_size,
                         cv2.FONT_HERSHEY_SIMPLEX, 
                         1, 
-                        (0, 255, 0))
+                        (0, 0, 255),
+                        3)
 
 
     def resize_img(self, width=200, height=2000):
@@ -161,3 +139,34 @@ if __name__ == '__main__':
 # 
         #    cv2.rectangle(self.img, (x, y), (x + width, y + height), (255, 0, 0), 2)
         #    cv2.putText(self.img, f"Face_{iter}", (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0))
+
+
+    # def median_blur_roi(self, dim: list, blur: int):
+    #     '''Анонимизация region of interest путём блюра изображения
+    #     Param:
+    #         dim (list) - Координаты левого верхнего угла roi
+    #             и длина его рёбер[x, y, width, height]
+    #     '''
+    #     x, y, width, height = self.correct_dimension(dim)
+    #     # Чтобы избежать ошибки с отрицательными срезами:
+    #     # idx_x = x if x >= 0 else idx_x = 0
+    #     # idx_y = y if y >= 0 else idx_y = 0
+    #     roi = self.img[y:y+height, x:x+width]
+    #     blur_roi = cv2.medianBlur(roi, blur)
+    #     self.img[y:y+height, x:x+width] = blur_roi
+
+
+    # def pixelization_roi(self, dim: list, pix: int):
+    #     '''Анонимизация region of interest путём пикселизации изображения
+    #     Param:
+    #         dim (list) - Координаты левого верхнего угла roi
+    #             и длина его рёбер[x, y, width, height]
+    #     '''
+    #     x, y , width, height = self.correct_dimension(dim)
+
+    #     roi = self.img[y:y+height, x:x+width]
+        
+    #     temp = cv2.resize(roi, (width // pix, height // pix), interpolation=cv2.INTER_AREA)
+    #     pix_roi = cv2.resize(temp, (width, height), interpolation=cv2.INTER_NEAREST)
+
+    #     self.img[y:y+height, x:x+width] = pix_roi
