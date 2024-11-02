@@ -20,7 +20,14 @@ class ImageEditing():
 
     def correct_dimension(self, dim: list): 
         if dim is not None:
+            # x, y = map(dim[:2], lambda x: x if x >= 0 else 0)
             x, y , width, height = dim
+            if x < 0:
+                width += -x 
+                x = 0
+            if y < 0:
+                height += -y 
+                y = 0
             return x, y , width, height
         else:
             raise Exception("Dimension error")
@@ -32,32 +39,64 @@ class ImageEditing():
         cv2.GaussianBlur(self.img, (9, 9), 10)
 
 
-    def blur_roi(self, dim: list, blur: int):
+    def blur_roi(self, anon: str, dim: list, magnitude: int):
+        x, y , width, height = self.correct_dimension(dim)
+
+        roi = self.img[y:y+height, x:x+width]
+
+        if anon == 'blur':
+            blur_roi = cv2.blur(self.img[y:y+height, x:x+width])
+        elif anon == 'median':
+            cv2.medianBlur(self.img[y:y+height, x:x+width], magnitude)
+            self.img[y:y+height, x:x+width] = roi
+        elif anon == 'pixelization':
+            cv2.resize(self.img[y:y+height, x:x+width], (pix, pix))
+        else:
+            raise Exception("Anonymization error")
+
+    def median_blur_roi(self, dim: list, blur: int):
         '''Анонимизация region of interest путём блюра изображения
         Param:
             dim (list) - Координаты левого верхнего угла roi
                 и длина его рёбер[x, y, width, height]
         '''
         x, y, width, height = self.correct_dimension(dim)
-
+        # Чтобы избежать ошибки с отрицательными срезами:
+        # idx_x = x if x >= 0 else idx_x = 0
+        # idx_y = y if y >= 0 else idx_y = 0
         roi = self.img[y:y+height, x:x+width]
-        blur_roi = cv2.medianBlur(self.img[y:y+height, x:x+width], blur)
+        blur_roi = cv2.medianBlur(roi, blur)
         self.img[y:y+height, x:x+width] = blur_roi
 
+
+    def pixelization_roi(self, dim: list, pix: int):
+        '''Анонимизация region of interest путём пикселизации изображения
+        Param:
+            dim (list) - Координаты левого верхнего угла roi
+                и длина его рёбер[x, y, width, height]
+        '''
+        x, y , width, height = self.correct_dimension(dim)
+
+        roi = self.img[y:y+height, x:x+width]
+        
+        temp = cv2.resize(roi, (width // pix, height // pix), interpolation=cv2.INTER_AREA)
+        pix_roi = cv2.resize(temp, (width, height), interpolation=cv2.INTER_NEAREST)
+
+        self.img[y:y+height, x:x+width] = pix_roi
 
     def display_simple_interface(self,
                              dim: list,
                              dims: list,
                              iter: int = 0,
                             ):
-        '''Отображает bbox лица
+        '''Отображает bbox лица и его номер среди всех найденных лиц
         Param:
             dim (list) - Координаты левого верхнего угла bbox 
                 и длина его рёбер[x, y, width, height]
             iter (int) - номер лица
         '''
         x, y, width, height = self.correct_dimension(dim)
-        window_size = (self.width // 10, self.height // 6)
+        window_size = (self.width // 16, self.height // 10)
         cv2.rectangle(self.img, (x, y), (x + width, y + height), (255, 0, 0), 2)
         cv2.putText(self.img, 
                     f"Face_{iter + 1}", 

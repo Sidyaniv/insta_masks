@@ -5,11 +5,10 @@ from src.person_announ.image_edit import ImageEditing
 from src.person_announ.face_detection import face_detection
 from src.person_announ.args import CAMERA_FORMAT, VIDEO_FORMAT, VIDEO_PATH
 
-windowSize = [2000, 1000]
-# TODO сделать более точную детекцию, тк в DNN она легла.
-# TODO Зарефакторить ошибку при отсутствии лиц
+windowSize = [700, 700]
 # TODO Добавить детекцию лиц с помощью HOG
-# TODO Добавить несколько вариантов блюра ROI
+# TODO Создать общую функцию блюра 
+# TODO Убрать баг в пикселизации с изменением размерности roi
 
 
 def person_announcement(model: str,
@@ -22,24 +21,32 @@ def person_announcement(model: str,
     while True: 
         success, img = cap.read()
         if not success:
-            raise Exception("Ошибка в захвате кадра") 
+            raise Exception("Ошибка при захвате кадра") 
 
         img_edit = ImageEditing(image=img)
         img_edit.detect_preparation()
         # window_size = [img_edit.width, img_edit.height / 2]
         
         faces = face_detection(det_model=model, img=img_edit.img)
-        if faces is None:
-            raise Exception(f"Ошибка детекции лиц моделью (faces[1] = {faces})")
+        # if faces is None:
+            # raise Exception(f"Ошибка детекции лиц моделью (faces[1] = {faces})")
+        if faces is not None:
+            for iteration, face in enumerate(faces):
+                if model=='opencv_dnn':
+                    face_procent = face[14]
+                    face = [round(item) for item in face[:14]]
+                    main_points = face[4:]
 
-        for iteration, face in enumerate(faces):
-            if model=='opencv_dnn':
-                face_procent = face[14]
-                main_points = face[4:-1]
-                face = [int(item) for item in face[:4]]
-            
-            img_edit.blur_roi(dim=face, blur=31)
-            img_edit.display_simple_interface(dim=face, dims=faces, iter=iteration)
+                    for iter in range(0, len(main_points), 2):
+                        cv2.circle(img_edit.img, 
+                                (main_points[iter], main_points[iter + 1]), 
+                                1, (0, 255, 0), 2)
+                    face = face[:4]                
+                        
+                img_edit.median_blur_roi(dim=face, blur=31)
+                # img_edit.pixelization_roi(dim=face, pix=15)
+                
+                img_edit.display_simple_interface(dim=face, dims=faces, iter=iteration)
 
         cv2.imshow('video', img_edit.img)
 
@@ -50,7 +57,10 @@ def person_announcement(model: str,
 
 
 if __name__ == '__main__':
-    # person_announcement(model='haarcascade')
+    # person_announcement(model='haarcascade',
+                        # window_size=windowSize,
+                        # )
+
     person_announcement(model='opencv_dnn',
                         window_size=windowSize,
                         )
