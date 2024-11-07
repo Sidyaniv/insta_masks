@@ -40,6 +40,9 @@ class ImageEditing():
 
 
     def blur_roi(self, type: str, dim: list, magnitude: int=15):
+        if magnitude  % 2 == 0:
+            magnitude += 1
+
         x, y , width, height = self.correct_dimension(dim)
 
         roi = self.img[y:y+height, x:x+width]
@@ -55,8 +58,13 @@ class ImageEditing():
             blur_roi = cv2.resize(temp, 
                                  (width, height), 
                                  interpolation=cv2.INTER_NEAREST)
-        # else:
-            # raise Exception("Anonymization error")
+
+            # resize делается для предотвращения исключения вызванного 
+            # изменениями размерности roi при его пикселизации 
+            blur_roi = cv2.resize(blur_roi, (roi.shape[1], roi.shape[0]), interpolation=cv2.INTER_NEAREST)
+        else:
+            raise Exception("Anonymization type error")
+        
         self.img[y:y+height, x:x+width] = blur_roi
 
 
@@ -73,45 +81,42 @@ class ImageEditing():
         '''
         x, y, width, height = self.correct_dimension(dim)
         window_size = (self.width // 16, self.height // 10)
-        cv2.rectangle(self.img, (x, y), (x + width, y + height), (255, 0, 0), 2)
-        cv2.putText(self.img, 
-                    f"Face_{iter + 1}", 
-                    (x, y - 10), 
-                    cv2.FONT_HERSHEY_SIMPLEX, 
-                    1, 
-                    (0, 255, 0),
-                    2)
+
+        text = f"Detected faces: {len(dims)}"
+        detect_fsize = cv2.getTextSize(text,
+                                    cv2.FONT_HERSHEY_SIMPLEX,
+                                    1,
+                                    3)[0]
         cv2.putText(self.img,
-                        f"Detected faces: {len(dims)}",
-                        window_size,
-                        cv2.FONT_HERSHEY_SIMPLEX, 
-                        1, 
-                        (0, 0, 255),
-                        3)
+                    text,
+                    (window_size[0], 2 * detect_fsize[1] ),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    1, (0, 0, 255), 3)
+        
+        text = f"Face_{iter + 1}"
+        face_fsize = cv2.getTextSize(text, 
+                                     cv2.FONT_HERSHEY_SIMPLEX, 
+                                     1, 
+                                     2)[0]
+        # Резиновая верстка 
+        top_location = y - 10
+        bottom_location = y + dim[3] + 2 * face_fsize[1]
+        cv2.putText(self.img, 
+                    text, 
+                    (x, top_location if y > 3 * detect_fsize[1] + face_fsize[1] else bottom_location), 
+                    cv2.FONT_HERSHEY_SIMPLEX, 
+                    1, (0, 255, 0), 2)
+        
+        
+        cv2.rectangle(self.img, (x, y), (x + width, y + height), (255, 0, 0), 2)
 
 
-    def resize_img(self, width=200, height=2000):
-        self.img = cv2.resize(self.img, (width, height))
-        # выводим часть изображения с помощью срезов
-        # return new_img[0:200, 0:200, ::-1]
-
-
-    def rotate_image(self, angle: int):
-        '''angle (int) - angle of rotate in degrees'''
-        height, width = self.img.shape[:2]
-        rot_poi = (width / 2, height / 2)
-        matrix = cv2.getRotationMatrix2D(rot_poi, angle, 1)
-        self.img = cv2.warpAffine(self.img, matrix, (width, height))
-
-
-    def transform_image(self, x, y):
-        matrix = np.float32([[1, 0, x], [0, 1, y]])
-        self.img = cv2.warpAffine(self.img, matrix, (self.width, self.height))
-
-
-    def get_contours(self):
-        con, hir = cv2.findContours(self.img, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
-        return con
+    def draw_key_points(self, coordinates: list):
+        for i in range(0, len(coordinates), 2):
+            cv2.circle(self.img, 
+                       (coordinates[i], coordinates[i+1]), 
+                       2, (0, 0, 255), 2)
+                    #    2, (0, 0, i * 30), 2)
 
 
 
@@ -120,8 +125,6 @@ if __name__ == '__main__':
     pass
     # people = ImageEditing(image_path=IMAGE_PATH)
     # show_img(people.img)
-
-
 
     # def display_hard_interface(self,
                         #   dim: list,
@@ -136,37 +139,6 @@ if __name__ == '__main__':
             #    -
         #    '''
         #    x, y, width, height = dim
-# 
+
         #    cv2.rectangle(self.img, (x, y), (x + width, y + height), (255, 0, 0), 2)
         #    cv2.putText(self.img, f"Face_{iter}", (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0))
-
-
-    # def median_blur_roi(self, dim: list, blur: int):
-    #     '''Анонимизация region of interest путём блюра изображения
-    #     Param:
-    #         dim (list) - Координаты левого верхнего угла roi
-    #             и длина его рёбер[x, y, width, height]
-    #     '''
-    #     x, y, width, height = self.correct_dimension(dim)
-    #     # Чтобы избежать ошибки с отрицательными срезами:
-    #     # idx_x = x if x >= 0 else idx_x = 0
-    #     # idx_y = y if y >= 0 else idx_y = 0
-    #     roi = self.img[y:y+height, x:x+width]
-    #     blur_roi = cv2.medianBlur(roi, blur)
-    #     self.img[y:y+height, x:x+width] = blur_roi
-
-
-    # def pixelization_roi(self, dim: list, pix: int):
-    #     '''Анонимизация region of interest путём пикселизации изображения
-    #     Param:
-    #         dim (list) - Координаты левого верхнего угла roi
-    #             и длина его рёбер[x, y, width, height]
-    #     '''
-    #     x, y , width, height = self.correct_dimension(dim)
-
-    #     roi = self.img[y:y+height, x:x+width]
-        
-    #     temp = cv2.resize(roi, (width // pix, height // pix), interpolation=cv2.INTER_AREA)
-    #     pix_roi = cv2.resize(temp, (width, height), interpolation=cv2.INTER_NEAREST)
-
-    #     self.img[y:y+height, x:x+width] = pix_roi

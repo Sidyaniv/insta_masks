@@ -6,8 +6,6 @@ from src.person_announ.args import *
 
 def get_video_window(width: int, height: int):
     cap = cv2.VideoCapture(0)
-    # устанавливаем размеры выводимого видео
-    # propid==3 - width, propid==4 - height
     cap.set(3, width)
     cap.set(4, height)
     return cap
