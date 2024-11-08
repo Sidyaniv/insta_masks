@@ -15,9 +15,9 @@ def preparate_points(coords_list: List[int]) -> List[List[str]]:
     return list_of_points
 
 
-def get_avg_face_point(points: list) -> Tuple[int]: #[4]
-    average_x = np.average(np.array(points[::2], np.int16))
-    average_y = np.average(np.array(points[1::2], np.int16))
+def get_avg_face_point(unpacked_points: list) -> Tuple[int]: #[4]
+    average_x = np.average(np.array(unpacked_points[::2], np.int16))
+    average_y = np.average(np.array(unpacked_points[1::2], np.int16))
  
     return round(average_x), round(average_y)
 

@@ -8,7 +8,7 @@ def show_img(img) -> None:
 
 
 class ImageEditing():
-    def __init__(self, image_path: str = None, image: np.ndarray = None):
+    def __init__(self, image: np.ndarray = None, image_path: str = None):
         if image_path is not None:
             self.image_path = image_path
             self.img = cv2.imread(image_path)
@@ -34,7 +34,10 @@ class ImageEditing():
 
 
     def detect_preparation(self):
-        '''Подготовка изображения к детектированию лиц'''
+        '''Подготовка изображения к детектированию лиц. 
+        1. Перевод формата: BGR->GRAY
+        2. Гауссово размытие
+        '''
         cv2.cvtColor(self.img, cv2.COLOR_BGR2GRAY)
         cv2.GaussianBlur(self.img, (9, 9), 10)
 
@@ -73,11 +76,11 @@ class ImageEditing():
                              dims: list,
                              iter: int = 0,
                             ):
-        '''Отображает bbox лица и его номер среди всех найденных лиц
+        '''Отображает bbox лица и его номер среди всех найденных лиц.
         Param:
             dim (list) - Координаты левого верхнего угла bbox 
-                и длина его рёбер[x, y, width, height]
-            iter (int) - номер лица
+                и длина его рёбер[x, y, width, height].
+            iter (int) - номер лица.
         '''
         x, y, width, height = self.correct_dimension(dim)
         window_size = (self.width // 16, self.height // 10)
@@ -123,22 +126,3 @@ class ImageEditing():
 # пример работы
 if __name__ == '__main__':
     pass
-    # people = ImageEditing(image_path=IMAGE_PATH)
-    # show_img(people.img)
-
-    # def display_hard_interface(self,
-                        #   dim: list,
-                        #   iter: int = 0
-                        #  ):
-        #    '''Отображает bbox лица, координаты левого верхнего угла bbox и длина его рёбер, номер лица, вероятность детекции лица.
-        #    Param:
-            #    dim (list) - Координаты левого верхнего угла bbox 
-                #    и длина его рёбер[x, y, width, height]
-            #    iter (int) - номер лица
-        #    Return: 
-            #    -
-        #    '''
-        #    x, y, width, height = dim
-
-        #    cv2.rectangle(self.img, (x, y), (x + width, y + height), (255, 0, 0), 2)
-        #    cv2.putText(self.img, f"Face_{iter}", (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0))
