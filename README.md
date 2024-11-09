@@ -1,6 +1,7 @@
-# CV_project
+# Project using Open CV 
 Exploring opencv
 
+## Person announcement
 
 # Список литературы
 
