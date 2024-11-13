@@ -6,34 +6,35 @@ from src.person_announ.face_detection import face_detection
 from src.person_announ.utils import preparate_points, get_avg_face_point
 from src.person_announ.args import CAMERA_FORMAT, VIDEO_FORMAT, VIDEO_PATH
 
-
 windowSize = [700, 700]
-# TODO Добавить детекцию лиц с помощью HOG
+
+
 # TODO Аннотация типов
 # TODO Оформить документацию
+# TODO маски 2д
 
 def person_announcement(model: str,
-                        window_size: list[int]=(640, 480),
-                        blur_type: str='median',
-                        magnitude: int=15,
-                        format: str=CAMERA_FORMAT,
-                        video_path: str='VIDEO_PATH',
-                       ):
+                        window_size: list[int] = (640, 480),
+                        blur_type: str = 'median',
+                        magnitude: int = 15,
+                        # format: str = CAMERA_FORMAT,
+                        # video_path: str = 'VIDEO_PATH',
+                        ):
     cap = get_video_window(*window_size)
 
-    while True: 
+    while True:
         success, img = cap.read()
         if not success:
-            raise Exception("Ошибка при захвате кадра") 
+            raise Exception("Ошибка при захвате кадра")
 
         img_edit = ImageEditing(image=img)
         img_edit.detect_preparation()
 
         faces = face_detection(det_model=model, img=img_edit.img)
-        
+
         if faces is not None:
             for iteration, face in enumerate(faces):
-                if model=='opencv_dnn':
+                if model == 'yunet':
                     face = [round(item) for item in face[:14]]
                     face_bbox, key_points = face[:4], face[4:]
                     img_edit.draw_key_points(key_points)
@@ -48,14 +49,14 @@ def person_announcement(model: str,
                     # y_left = round(avg_poi[1] - (height * 0.9))
                     # y_right = round(y_left + height * 1.8)
                     # img_edit.img = img_edit.img[y_left:y_right, x_left:x_right]
-                else: 
+                else:
                     face_bbox = face
 
-                img_edit.blur_roi(type=blur_type, 
+                img_edit.blur_roi(type=blur_type,
                                   dim=face_bbox,
                                   magnitude=magnitude)
-                img_edit.display_simple_interface(dim=face_bbox, 
-                                                  dims=faces, 
+                img_edit.display_simple_interface(dim=face_bbox,
+                                                  dims=faces,
                                                   iter=iteration)
 
         cv2.imshow('video', img_edit.img)
@@ -68,12 +69,13 @@ def person_announcement(model: str,
 
 if __name__ == '__main__':
     # person_announcement(model='haarcascade',
-                        # window_size=windowSize,
-                        # blur_type='pixelization',
-                        # )
+    # window_size=windowSize,
+    # blur_type='pixelization',
+    # )
 
-    person_announcement(model='opencv_dnn',
+    person_announcement(model='yunet',
                         window_size=windowSize,
                         blur_type='pixelization',
                         magnitude=12
                         )
+
