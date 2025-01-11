@@ -1,5 +1,5 @@
 # CV_project
-Exploring opencv
+Detection and anonimazation faces with opencv
 
 
 # Источники
