@@ -1,6 +1,6 @@
-# Project using Open CV 
-Exploring opencv
+# Face recognition with help Open CV 
 
+face recognition with further image anonymization
 ## Person announcement
 
 # Список литературы
